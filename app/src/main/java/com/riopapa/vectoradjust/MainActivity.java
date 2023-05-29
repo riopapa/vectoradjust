@@ -12,6 +12,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,18 +28,11 @@ public class MainActivity extends AppCompatActivity {
     String oup;
     int p;
     int oX = 24, oY = 24, srcX, srcY;
-    String strX, strY, strZ, cmd = "@", nbr, chr, oStr;
-    float xR, yR, baseX = -1, baseY = -1, valX = -1, valY = -1, valZ;
+    String str1, str2, strZ, cmd, nbr, inpCmd, outCmd, inpPath, outPath;
+    float xR, yR, baseX = -1, baseY = -1, val1 = -1, val2 = -1;
 
     String org;
-    String xml = "<vector android:height=\"24dp\"\n" +
-            "        android:viewportHeight=\"24\" android:viewportWidth=\"24\"\n" +
-            "        android:width=\"24dp\" xmlns:android=\"http://schemas.android.com/apk/res/android\">\n" +
-            "    <path android:fillColor=\"@android:color/white\" android:pathData=\"M15.5,14h-0.79l-0.28,-0.27C15.41,12.59 16,11.11 16,9.5 16,5.91 13.09,3 9.5,3S3,5.91 3,9.5 5.91,16 9.5,16c1.61,0 3.09,-0.59 4.23,-1.57l0.27,0.28v0.79l5,4.99L20.49,19l-4.99,-5z\n" +
-            "        M9.5,14C7.01,14 5,11.99 5,9.5S7.01,5 9.5,5 14,7.01 14,9.5 11.99,14 9.5,14z\n" +
-            "\"/>\n" +
-            "</vector>\n" +
-            "\n";
+    String xml = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,314 +43,342 @@ public class MainActivity extends AppCompatActivity {
         tvOup = findViewById(R.id.txt_dst);
         tvInp.setText(xml);
 
-        String src[] = xml.split("\n");
-        String oup = "";
-        String pathData = "pathData";
-        for (int i = 0; i < src.length; i++) {
-            String s = src[i];
-            if (s.contains(pathData)) {
-                int p = s.indexOf(pathData);
-                int pe = p + pathData.length() + 1;
-                oup += s.substring(0, pe+1);
-                int p1 = s.indexOf("\"",pe+2);
-                if (p1 == -1)
-                    p1 = s.length();
-                oStr = "";
-                String path = pathData(s.substring(pe+1, p1));
-                oup += path + s.substring(p1)+"\n";
-            } else
-                oup += s +"\n";
+        String oneLine  = "";
+        StringBuilder sbuffer = new StringBuilder();
+        InputStream is = this.getResources().openRawResource(R.raw.atest);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        if (is != null) {
+            try {
+                while ((oneLine = reader.readLine()) != null) {
+                    sbuffer.append(oneLine + "\n");
+                }
+                is.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            xml = sbuffer.toString();
         }
-        oup += "\n";
-        tvOup.setText(oup);
-        Log.w("oup", oup);
+        tvOup.setText(xml);
+
+        String newXml = xml;
+        String PATH_STR = "pathData";
+        int p = newXml.indexOf(PATH_STR);
+        while (p > 0) {
+            int pe = p + PATH_STR.length() + 1;
+            int p1 = newXml.indexOf("\"", pe + 2);
+            inpPath = newXml.substring(pe + 1, p1);
+            pathData();
+            newXml = newXml.substring(0, pe+1) + outPath + newXml.substring(p1);
+            Log.w("Path","inp="+inpPath);
+            Log.w("Path","out="+outPath);
+            p = p1 + 2;
+            p = newXml.indexOf(PATH_STR, p);
+        }
+        tvOup.setText(newXml);
+        try {
+            FileOutputStream fileout=openFileOutput("xml.txt", MODE_PRIVATE);
+            OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
+            outputWriter.write(newXml);
+            outputWriter.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
+    void pathData() {
 
-    String pathData(String s) {
-
-        oStr = "";
-        p = 0;
-        org = s;
-        while (s.length() > 0) {
-            chr = s.substring(0,1);
-            if (chr.equals("M")) {
-                s = cmd_M(s);
-            } else if (chr.equals("z") || chr.equals("Z")) {
-                oStr += chr;
-                if (s.length()> 1)
-                    s = s.substring(1);
-                else
-                    break;
-            } else if (chr.equals("m")) {
-                s = cmd_m(s);
-            } else if (chr.equals("L")) {
-                s = cmd_L(s);
-            } else if (chr.equals("l")) {
-                s = cmd_l(s);
-            } else if (chr.equals("V")) {
-                s = cmd_V(s);
-            } else if (chr.equals("v")) {
-                s = cmd_v(s);
-            } else if (chr.equals("H")) {
-                s = cmd_H(s);
-            } else if (chr.equals("h")) {
-                s = cmd_h(s);
-            } else if (chr.equals("a")) {
-                s = cmd_a(s);
-            } else if (chr.equals("A")) {
-                s = cmd_A(s);
-            } else if (chr.equals("C")) {
-                s = cmd_C(s);
-            } else if (chr.equals("c")) {
-                s = cmd_c(s);
-            } else if (chr.equals("S")) {
-                s = cmd_S(s);
-            } else if (chr.equals("s")) {
-                s = cmd_s(s);
-            } else {
-                Log.w("Invalid CMd ",chr+" abort");
-                valX = 0;
-                Log.w("Abort", "div " + (valY / valX));
-                break;
+        int p = 0;
+        outPath = "";
+        inpCmd = "";
+        while (p < inpPath.length()) {
+            if (inpPath.charAt(p) >= 'A') {
+                inpCmd += inpPath.charAt(p);
+                p++;
+                while (p < inpPath.length() && inpPath.charAt(p) < 'A'
+                        && inpPath.charAt(p) != '\n') {  // digit or space
+                    inpCmd += inpPath.charAt(p);
+                    p++;
+                }
+                convertOneCmd();
+                outPath += outCmd;
+                inpPath = inpPath.substring(p);
+                inpCmd = "";
+                p = 0;
+            } else if (inpPath.charAt(p) <= ' ') {
+                outPath += inpPath.charAt(p);
+                p++;
             }
         }
-        return oStr;
     }
-    @NonNull
-    private String cmd_M(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = getXYPos(s.substring(1));
-        baseX = valX; baseY = valY;
-        oStr += baseX+","+baseY;
-        return s;
-    }
-    @NonNull
-    private String cmd_m(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = getXYPos(s.substring(1));
-        baseX += valX; baseY += valY;
-        oStr += valX+","+valY;
-        return s;
-    }
-    @NonNull
-    private String cmd_C(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXYPos(s);
-            oStr += fmt(valX-baseX)+","+fmt(valY-baseY);
-            s = skipBlank(s);
+    
+    void convertOneCmd() {
+        Log.w("one line","inp="+ inpCmd);
+        cmd = inpCmd.substring(0,1);
+
+        if (cmd.equals("M")) cmd_M();
+        else if (cmd.equals("m")) cmd_m();
+        else if (cmd.equals("L")) cmd_L();
+        else if (cmd.equals("l")) cmd_l();
+        else if (cmd.equals("V")) cmd_V();
+        else if (cmd.equals("H")) cmd_H();
+        else if (cmd.equals("h")) cmd_h();
+        else if (cmd.equals("v")) cmd_v();
+        else if (cmd.equals("A")) cmd_A();
+        else if (cmd.equals("C")) cmd_C();
+        else if (cmd.equals("a")) cmd_a();
+        else if (cmd.equals("c")) cmd_c();
+        else if (cmd.equals("S")) cmd_S();
+        else if (cmd.equals("s")) cmd_s();
+        else if (cmd.equals("z") || cmd.equals("Z")) {
+            outCmd = cmd;
+            inpCmd = "";
         }
-        baseX = valX; baseY = valY;
-        return s;
-    }
-    @NonNull
-    private String cmd_c(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXYPos(s);
-            oStr += fmt(valX)+","+fmt(valY);
-            s = skipBlank(s);
+        else {
+            String msg = "Invalid CMd " + cmd +" abort";
+            val1 = 0;
+            outCmd += msg + "\n "+outCmd + msg;
+            Log.w("Abort", outCmd + " div " + (val2 / val1));
         }
-        baseX += valX; baseY += valY;
-        return s;
-    }
-    @NonNull
-    private String cmd_S(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXYPos(s);
-            oStr += fmt(valX-baseX)+","+fmt(valY-baseY);
-            s = skipBlank(s);
-        }
-        baseX = valX; baseY = valY;
-        return s;
-    }
-    @NonNull
-    private String cmd_s(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXYPos(s);
-            oStr += fmt(valX)+","+fmt(valY);
-            s = skipBlank(s);
-        }
-        baseX += valX; baseY += valY;
-        return s;
-    }
-    @NonNull
-    private String cmd_A(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        s = getXYPos(s);    // rx, ry
-        oStr += fmt(valX-baseX)+","+fmt(valY-baseY);
-        s = skipBlank(s);
-        s = getXYPos(s);    // two flags
-        oStr += strX+","+strY;
-        s = skipBlank(s);
-        s = getXYPos(s);    // final x,y position
-        oStr += fmt(valX-baseX)+","+fmt(valY-baseY);
-//        oStr += strX+","+strY;
-        s = skipBlank(s);
-        s = getZVal(s);  // rotation
-        oStr += strZ;
-        s = skipBlank(s);
-        baseX = valX; baseY = valY;
-        return s;
-    }
-    @NonNull
-    private String cmd_a(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = s.substring(1);
-        s = getXYPos(s);    // rx, ry
-        oStr += strX+","+strY;
-        s = skipBlank(s);
-        s = getXYPos(s);    // two flags
-        oStr += strX+","+strY;
-        s = skipBlank(s);
-        s = getXYPos(s);    // final x,y position
-        oStr += strX+","+strY;
-        s = skipBlank(s);
-        s = getZVal(s);  // rotation
-        oStr += strZ;
-        s = skipBlank(s);
-        baseX += valX; baseY += valY;
-        Log.w("after a",fmt(baseX)+" x "+fmt(baseY));
-        return s;
-    }
-    @NonNull
-    private String cmd_L(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXYPos(s);
-            oStr += fmt(valX-baseX)+","+fmt(valY-baseY);
-            baseX = valX; baseY = valY;
-            s = skipBlank(s);
-        }
-        return s;
-    }
-    @NonNull
-    private String cmd_l(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXYPos(s);
-            oStr += fmt(valX)+","+fmt(valY);
-            baseX += valX; baseY += valY;
-            s = skipBlank(s);
-        }
-        return s;
     }
 
     @NonNull
-    private String cmd_V(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getYPos(s);
-            oStr += fmt(valY-baseY);
-            baseY = valY;
-            s = skipBlank(s);
-        }
-        return s;
+    private void cmd_M() {  // Mxbase,ybase
+        outCmd= "M";
+        inpCmd = inpCmd.substring(1);
+        getTwoValues();
+        baseX = val1; baseY = val2;
+        outCmd += str1+","+str2;
+        inpCmd = "";
     }
     @NonNull
-    private String cmd_v(String s) {
-        cmd = chr;
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getYPos(s);
-            oStr += fmt(valY);
-            baseY += valY;
-            s = skipBlank(s);
-        }
-        return s;
+    private void cmd_m() {
+        outCmd = "m";
+        inpCmd = inpCmd.substring(1);
+        getTwoValues();
+        baseX += val1; baseY += val2;
+        outCmd += val1 +","+ val2;
+        inpCmd = "";
     }
     @NonNull
-    private String cmd_H(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXPos(s);
-            oStr += fmt(valX-baseX);
-            baseX = valX;
-            s = skipBlank(s);
-        }
-        return s;
+    private void cmd_C() {  // Cx1,y1, x2,y2, xBase, yBase
+        outCmd = "c";
+        inpCmd = inpCmd.substring(1);
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
+            getTwoValues();
+            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
+            getTwoValues();
+            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
+            baseX = val1; baseY = val2;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
+    }
     }
     @NonNull
-    private String cmd_h(String s) {
-        cmd = chr.toLowerCase();
-        oStr += cmd;
-        s = s.substring(1);
-        while (s.length()>0 && isDigit(s.substring(0,1))) {
-            s = getXPos(s);
-            oStr += fmt(valX);
-            baseX += valX;
-            s = skipBlank(s);
+    private void cmd_c() {
+        outCmd = "c";
+        inpCmd = inpCmd.substring(1);
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += str1 + "," + str2;
+            getTwoValues();
+            outCmd += str1 + "," + str2;
+            getTwoValues();
+            outCmd += str1 + "," + str2;
+            baseX += val1;
+            baseY += val2;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
         }
-        return s;
+    }
+    @NonNull
+    private void cmd_S() {  //  x1,y1, xBase, yBase
+        outCmd = "s";
+        inpCmd = inpCmd.substring(1);
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt(val1 - baseX) + "," + fmt(val2 - baseY);
+            getTwoValues();
+            outCmd += fmt(val1 - baseX) + "," + fmt(val2 - baseY);
+            baseX = val1;
+            baseY = val2;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
+        }
+    }
+    @NonNull
+    private void cmd_s() {
+        outCmd = "s";
+        inpCmd = inpCmd.substring(1);
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += str1 +","+ str2;
+            getTwoValues();
+            outCmd += str1 +","+ str2;
+            baseX += val1; baseY += val2;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
+        }
+
+    }
+
+    @NonNull
+    private void cmd_A() {
+        outCmd = "a";
+        inpCmd = inpCmd.substring(1);
+        getTwoValues();    // rx, ry
+        outCmd += str1+","+str2;;
+        getOneValues();
+        outCmd += str1; // rotation
+        getOneValues();
+        outCmd += str1; // large_arc flag
+        getOneValues();
+        outCmd += str1; // sweep flag
+        getOneValues();
+        outCmd += fmt(val1-baseX); // next x
+        baseX = val1;
+        getOneValues();
+        outCmd += fmt(val1-baseY); // next y
+        baseY = val1;
+    }
+
+    @NonNull
+    private void cmd_a() {
+        outCmd = "a";
+        inpCmd = inpCmd.substring(1);
+        getTwoValues();    // rx, ry
+        outCmd += str1+","+str2;;
+        skipBlank();
+        getOneValues();
+        outCmd += str1; // rotation
+        getOneValues();
+        outCmd += str1; // large_arc flag
+        getOneValues();
+        outCmd += str1; // sweep flag
+        getOneValues();
+        outCmd += str1; // next x
+        baseX += val1;
+        getOneValues();
+        outCmd += str1; // next y
+        baseY += val1;
+    }
+
+    @NonNull
+    private void cmd_L() {  // Lxbase, ybase
+        outCmd = "l";
+        inpCmd = inpCmd.substring(1);
+        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();
+            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
+            baseX = val1; baseY = val2;
+            skipBlank();
+        }
+    }
+    @NonNull
+    private void cmd_l() {
+        outCmd = "l";
+        inpCmd = inpCmd.substring(1);
+        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();
+            outCmd += str1 +","+ str2;
+            baseX += val1; baseY += val2;
+            skipBlank();
+        }
+    }
+
+    @NonNull
+    private void cmd_V() {  // Vybase
+        outCmd = "v";
+        inpCmd = inpCmd.substring(1);
+        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();
+            outCmd += fmt(val1 -baseY);
+            baseY = val1;
+        }
+    }
+    @NonNull
+    private void cmd_v() {
+        outCmd = "v";
+        inpCmd = inpCmd.substring(1);
+        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();
+            outCmd += str1;
+            baseY += val1;
+        }
+    }
+    @NonNull
+    private void cmd_H() {  // Hxbase
+        outCmd = "h";
+        inpCmd = inpCmd.substring(1);
+        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();
+            outCmd += fmt(val1 -baseX);
+            baseX = val1;
+        }
+    }
+    @NonNull
+    private void cmd_h() {
+        outCmd = "h";
+        inpCmd = inpCmd.substring(1);
+        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();
+            outCmd += str1;
+            baseX += val1;
+        }
     }
 
 
+    // getXYPos
+    // if normal inpCmd will be trunked after xy Position with true
+    // if no comma it returns x value only with false
     @NonNull
-    private String getXYPos(String s) {
-        strX = getDigits(s);
-        valX = Float.parseFloat(strX);
-        s = s.substring(strX.length());
-        s = skipBlank(s);
+    private boolean getTwoValues() {
+        skipBlank();
+        String s = inpCmd;
+        str1 = getDigitStr(s);
+        val1 = Float.parseFloat(str1);
+        s = s.substring(str1.length());
+        if (s.length() == 0) {  // only single digits
+            inpCmd = "";
+            return false;
+        }
+        while (s.charAt(0) == ' ')
+            s = s.substring(1);
         if (s.charAt(0) == ',') { // y value comming
             s = s.substring(1);
-            strY = getDigits(s);
-            valY = Float.parseFloat(strY);
-            s = s.substring(strY.length());
+            while (s.charAt(0) == ' ')
+                s = s.substring(1);
+            str2 = getDigitStr(s);
+            val2 = Float.parseFloat(str2);
+            inpCmd = s.substring(str2.length());
+            return true;
         } else {
-            Log.w(" x,y Err ["+chr+"]", baseX + " x " + baseY + " pos : " + s);
+            inpCmd = s;
         }
-        return s;
-    }
-    @NonNull
-    private String getZVal(String s) {
-        strZ = getDigits(s);
-        valZ = Float.parseFloat(strZ);
-        s = s.substring(strZ.length());
-        return s;
-    }
-    @NonNull
-    private String getXPos(String s) {
-        strX = getDigits(s);
-        valX = Float.parseFloat(strX);
-        s = s.substring(strX.length());
-        return s;
-    }
-    @NonNull
-    private String getYPos(String s) {
-        strY = getDigits(s);
-        valY = Float.parseFloat(strY);
-        s = s.substring(strY.length());
-        return s;
+        return false;
     }
 
-    String getDigits(String s) {
+    private void getOneValues() {
+        skipComma();
+        str1 = getDigitStr(inpCmd);
+        val1 = Float.parseFloat(str1);
+        inpCmd = inpCmd.substring(str1.length());
+    }
+
+    String getDigitStr(String inStr) {
         String p = "";
-        int i = 0;
+        String s = inStr;
         while (s.length() > 0) {
             String chr = s.substring(0,1);
             if (!"0123456789.-".contains(chr))
@@ -361,46 +388,43 @@ public class MainActivity extends AppCompatActivity {
         }
         return p;
     }
-
-    String skipBlank(String inp) {
-        if (inp.length() == 0)
-            return inp;
-        while (inp.charAt(0) == ' ') {
-            inp = inp.substring(1);
-            oStr += " ";
-            if (inp.length() == 0)
-                return inp;
+    // inpCmd shorten to outCmd; multi blank to one blank
+    void skipBlank() {
+        if (inpCmd.length() == 0)
+            return;
+        if (inpCmd.charAt(0) == ' ')
+            outCmd += " ";
+        while (inpCmd.charAt(0) == ' ') {
+            inpCmd = inpCmd.substring(1);
+            if (inpCmd.length() == 0)
+                return;
         }
-        return inp;
-    }
-    String vector(String s) {
-        int p, p1;
-
-        String viewportHeight = "viewportHeight";
-        p = s.indexOf(viewportHeight);
-        p1 = p + viewportHeight.length()+2;
-        if (p > 0) {
-            String ss = s.substring(p1, s.indexOf("\"", p1));
-            srcY = Integer.parseInt(ss);
-            s = s.substring(0,p1)+oX+s.substring(p1+ss.length()+1);
+        if (inpCmd.charAt(0) == '\n') {
+            outCmd += "\n";
+            inpCmd = inpCmd.substring(1);
+            skipBlank();
         }
-        String viewportWidth = "viewportWidth";
-        p = s.indexOf(viewportWidth);
-        p1 = p + viewportWidth.length()+2;
-        if (p > 0) {
-            String ss = s.substring(p1, s.indexOf("\"", p1));
-            srcX = Integer.parseInt(ss);
-            s = s.substring(0,p1)+oX+s.substring(p1+ss.length()+1);
+    }
+    void skipComma() {
+        if (inpCmd.length() == 0)
+            return;
+        skipBlank();
+        if (inpCmd.charAt(0) == ',') {
+            outCmd += ",";
+            inpCmd = inpCmd.substring(1);
+            if (inpCmd.length() == 0)
+                return;
         }
-        xR = oX / srcX; yR = oY / srcY;
-        return s;
+        skipBlank();
+        if (inpCmd.length() == 0)
+            return;
+        if (inpCmd.charAt(0) == '\n') {
+            outCmd += "\n";
+            inpCmd = inpCmd.substring(1);
+            skipBlank();
+        }
     }
 
-    boolean isCommand(String name) {
-        Pattern ps = Pattern.compile("([a-yA-Y])");    // except z
-        Matcher ms = ps.matcher(name);
-        return ms.matches();
-    }
     boolean isDigit(String chr) {
         if ("0123456789.-".contains(chr))
             return true;

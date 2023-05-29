@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "1055748737120",
+    "project_id": "encoded-rider-327413",
+    "storage_bucket": "encoded-rider-327413.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055748737120:android:122ae42f558c26ff1e9b05",
+        "android_client_info": {
+          "package_name": "com.riopapa.vectoradjust"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1055748737120-at8otduduv43oul48j66fafaj7nkeap2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-dST6QbNrUhcIM8JqC9FGwQ1p4xsd1wc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055748737120-at8otduduv43oul48j66fafaj7nkeap2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055748737120:android:d1d1726beda696371e9b05",
+        "android_client_info": {
+          "package_name": "com.urrecliner.googlesheet3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1055748737120-at8otduduv43oul48j66fafaj7nkeap2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-dST6QbNrUhcIM8JqC9FGwQ1p4xsd1wc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055748737120-at8otduduv43oul48j66fafaj7nkeap2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
