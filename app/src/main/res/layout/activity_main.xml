@@ -9,18 +9,34 @@
 
     <TextView
         android:id="@+id/go"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
+        android:textColor="#fff"
+        android:background="#22667f"
+        android:gravity="center"
+        android:text=" Go "
+        app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/txt_src"
+        app:layout_constraintRight_toLeftOf="@id/scale"
+        app:layout_constraintVertical_weight="1"
+     />
+    <EditText
+        android:id="@+id/scale"
+        android:layout_width="100dp"
+        android:layout_height="0dp"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/go"
         app:layout_constraintBottom_toTopOf="@id/txt_src"
         android:textColor="#fff"
         android:background="#22667f"
         android:gravity="center"
         app:layout_constraintVertical_weight="1"
-        android:text="Go"
-     />
+        android:text="80"
+    />
     <EditText
         android:id="@+id/txt_src"
         android:layout_width="match_parent"

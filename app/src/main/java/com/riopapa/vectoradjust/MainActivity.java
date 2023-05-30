@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     int oX = 24, oY = 24, srcX, srcY;
     String str1, str2, strZ, cmd, nbr, inpCmd, outCmd, inpPath, outPath;
     float xR, yR, baseX = -1, baseY = -1, val1 = -1, val2 = -1;
-
+    float scale;
     String org;
     String xml = "";
 
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         tvInp = findViewById(R.id.txt_src);
         tvOup = findViewById(R.id.txt_dst);
         tvInp.setText(xml);
-
+        scale = 100;
         String oneLine  = "";
         StringBuilder sbuffer = new StringBuilder();
         InputStream is = this.getResources().openRawResource(R.raw.atest);
@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
             xml = sbuffer.toString();
         }
         tvOup.setText(xml);
+        TextView tvScale = findViewById(R.id.scale);
+        scale = Float.parseFloat(tvScale.getText().toString()) / 100f;
 
         String newXml = xml;
         String PATH_STR = "pathData";
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         int p = 0;
         outPath = "";
         inpCmd = "";
+        baseX = 0; baseY = 0;
         while (p < inpPath.length()) {
             if (inpPath.charAt(p) >= 'A') {
                 inpCmd += inpPath.charAt(p);
@@ -131,6 +134,8 @@ public class MainActivity extends AppCompatActivity {
         else if (cmd.equals("c")) cmd_c();
         else if (cmd.equals("S")) cmd_S();
         else if (cmd.equals("s")) cmd_s();
+        else if (cmd.equals("Q")) cmd_Q();
+        else if (cmd.equals("q")) cmd_q();
         else if (cmd.equals("z") || cmd.equals("Z")) {
             outCmd = cmd;
             inpCmd = "";
@@ -148,18 +153,23 @@ public class MainActivity extends AppCompatActivity {
         outCmd= "M";
         inpCmd = inpCmd.substring(1);
         getTwoValues();
-        baseX = val1; baseY = val2;
-        outCmd += str1+","+str2;
+        baseX = val1 * scale; baseY = val2 * scale;
+        outCmd += fmt(baseX)+","+fmt(baseY);
         inpCmd = "";
     }
     @NonNull
     private void cmd_m() {
         outCmd = "m";
         inpCmd = inpCmd.substring(1);
-        getTwoValues();
-        baseX += val1; baseY += val2;
-        outCmd += val1 +","+ val2;
-        inpCmd = "";
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            baseX += val1 * scale; baseY += val2 * scale;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
+        }
     }
     @NonNull
     private void cmd_C() {  // Cx1,y1, x2,y2, xBase, yBase
@@ -168,16 +178,16 @@ public class MainActivity extends AppCompatActivity {
         skipBlank();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
-            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
-            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
-            baseX = val1; baseY = val2;
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            baseX = val1 * scale; baseY = val2 * scale;
             skipBlank();
             if (inpCmd.length() == 0)
                 break;
-    }
+        }
     }
     @NonNull
     private void cmd_c() {
@@ -186,13 +196,12 @@ public class MainActivity extends AppCompatActivity {
         skipBlank();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += str1 + "," + str2;
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             getTwoValues();
-            outCmd += str1 + "," + str2;
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             getTwoValues();
-            outCmd += str1 + "," + str2;
-            baseX += val1;
-            baseY += val2;
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            baseX += val1 * scale; baseY += val2 * scale;
             skipBlank();
             if (inpCmd.length() == 0)
                 break;
@@ -205,11 +214,10 @@ public class MainActivity extends AppCompatActivity {
         skipBlank();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt(val1 - baseX) + "," + fmt(val2 - baseY);
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
-            outCmd += fmt(val1 - baseX) + "," + fmt(val2 - baseY);
-            baseX = val1;
-            baseY = val2;
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            baseX = val1 * scale; baseY = val2 * scale;
             skipBlank();
             if (inpCmd.length() == 0)
                 break;
@@ -222,15 +230,46 @@ public class MainActivity extends AppCompatActivity {
         skipBlank();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += str1 +","+ str2;
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             getTwoValues();
-            outCmd += str1 +","+ str2;
-            baseX += val1; baseY += val2;
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            baseX += val1 * scale; baseY += val2 * scale;
             skipBlank();
             if (inpCmd.length() == 0)
                 break;
         }
-
+    }
+    @NonNull
+    private void cmd_Q() {  //  x1,y1, xBase, yBase
+        outCmd = "q";
+        inpCmd = inpCmd.substring(1);
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            getTwoValues();
+            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            baseX = val1 * scale; baseY = val2 * scale;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
+        }
+    }
+    @NonNull
+    private void cmd_q() {
+        outCmd = "q";
+        inpCmd = inpCmd.substring(1);
+        skipBlank();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            getTwoValues();
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            baseX += val1 * scale; baseY += val2 * scale;
+            skipBlank();
+            if (inpCmd.length() == 0)
+                break;
+        }
     }
 
     @NonNull
@@ -246,11 +285,11 @@ public class MainActivity extends AppCompatActivity {
         getOneValues();
         outCmd += str1; // sweep flag
         getOneValues();
-        outCmd += fmt(val1-baseX); // next x
-        baseX = val1;
+        outCmd += fmt(val1 * scale - baseX);
+        baseX = val1 * scale;
         getOneValues();
-        outCmd += fmt(val1-baseY); // next y
-        baseY = val1;
+        outCmd += fmt(val1 * scale - baseY);
+        baseY = val1 * scale;
     }
 
     @NonNull
@@ -267,11 +306,11 @@ public class MainActivity extends AppCompatActivity {
         getOneValues();
         outCmd += str1; // sweep flag
         getOneValues();
-        outCmd += str1; // next x
-        baseX += val1;
+        outCmd += fmt(val1 * scale);
+        baseX += val1 * scale;
         getOneValues();
-        outCmd += str1; // next y
-        baseY += val1;
+        outCmd += fmt(val1 * scale);
+        baseY += val1 * scale;
     }
 
     @NonNull
@@ -280,8 +319,8 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
-            outCmd += fmt(val1 -baseX)+","+fmt(val2 -baseY);
-            baseX = val1; baseY = val2;
+            outCmd += fmt(val1 * scale - baseX)+","+fmt(val2 * scale - baseY);
+            baseX = val1 * scale; baseY = val2 * scale;
             skipBlank();
         }
     }
@@ -291,8 +330,8 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
-            outCmd += str1 +","+ str2;
-            baseX += val1; baseY += val2;
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            baseX += val1 * scale; baseY += val2 * scale;
             skipBlank();
         }
     }
@@ -302,9 +341,9 @@ public class MainActivity extends AppCompatActivity {
         outCmd = "v";
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
-            getTwoValues();
-            outCmd += fmt(val1 -baseY);
-            baseY = val1;
+            getOneValues();
+            outCmd += fmt(val1 * scale - baseY);
+            baseY = val1 * scale;
         }
     }
     @NonNull
@@ -312,9 +351,9 @@ public class MainActivity extends AppCompatActivity {
         outCmd = "v";
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
-            getTwoValues();
-            outCmd += str1;
-            baseY += val1;
+            getOneValues();
+            outCmd += fmt(val1 * scale);
+            baseY += val1 * scale;
         }
     }
     @NonNull
@@ -322,9 +361,9 @@ public class MainActivity extends AppCompatActivity {
         outCmd = "h";
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
-            getTwoValues();
-            outCmd += fmt(val1 -baseX);
-            baseX = val1;
+            getOneValues();
+            outCmd += fmt(val1 * scale - baseX);
+            baseX = val1 * scale;
         }
     }
     @NonNull
@@ -332,12 +371,11 @@ public class MainActivity extends AppCompatActivity {
         outCmd = "h";
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
-            getTwoValues();
-            outCmd += str1;
-            baseX += val1;
+            getOneValues();
+            outCmd += fmt(val1 * scale);
+            baseX += val1 * scale;
         }
     }
-
 
     // getXYPos
     // if normal inpCmd will be trunked after xy Position with true
