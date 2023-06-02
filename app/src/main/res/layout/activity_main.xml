@@ -35,7 +35,7 @@
         android:background="#22667f"
         android:gravity="center"
         app:layout_constraintVertical_weight="1"
-        android:text="80"
+        android:text="40"
     />
     <EditText
         android:id="@+id/txt_src"

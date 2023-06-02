@@ -1,10 +1,17 @@
 package com.riopapa.vectoradjust;
 
+import static java.lang.String.*;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,37 +20,43 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView tvGo, tvInp, tvOup;
-    String oup;
-    int p;
-    int oX = 24, oY = 24, srcX, srcY;
-    String str1, str2, strZ, cmd, nbr, inpCmd, outCmd, inpPath, outPath;
-    float xR, yR, baseX = -1, baseY = -1, val1 = -1, val2 = -1;
+    TextView tvGo, tvOup;
+    String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
+    float baseX = -1, baseY = -1, val1 = -1, val2 = -1;
     float scale;
-    String org;
     String xml = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()){
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri uri = Uri.fromParts("package", this.getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        }
+
+
         tvGo = findViewById(R.id.go);
-        tvInp = findViewById(R.id.txt_src);
         tvOup = findViewById(R.id.txt_dst);
-        tvInp.setText(xml);
-        scale = 100;
-        String oneLine  = "";
+        String oneLine;
         StringBuilder sbuffer = new StringBuilder();
         InputStream is = this.getResources().openRawResource(R.raw.atest);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -61,8 +74,8 @@ public class MainActivity extends AppCompatActivity {
         }
         tvOup.setText(xml);
         TextView tvScale = findViewById(R.id.scale);
-        scale = Float.parseFloat(tvScale.getText().toString()) / 100f;
-
+//        scale = Float.parseFloat(tvScale.getText().toString()) / 100f;
+        scale = 0.4f;
         String newXml = xml;
         String PATH_STR = "pathData";
         int p = newXml.indexOf(PATH_STR);
@@ -87,68 +100,95 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        writeFile(new File(Environment.getExternalStorageDirectory(), "download"),"drawable_xml.txt", newXml);
     }
 
     void pathData() {
 
-        int p = 0;
         outPath = "";
-        inpCmd = "";
         baseX = 0; baseY = 0;
-        while (p < inpPath.length()) {
-            if (inpPath.charAt(p) >= 'A') {
-                inpCmd += inpPath.charAt(p);
-                p++;
-                while (p < inpPath.length() && inpPath.charAt(p) < 'A'
-                        && inpPath.charAt(p) != '\n') {  // digit or space
-                    inpCmd += inpPath.charAt(p);
-                    p++;
-                }
-                convertOneCmd();
-                outPath += outCmd;
-                inpPath = inpPath.substring(p);
-                inpCmd = "";
-                p = 0;
-            } else if (inpPath.charAt(p) <= ' ') {
-                outPath += inpPath.charAt(p);
+
+        while (inpPath.length() > 1) {
+            while (inpPath.charAt(0) <= ' ')
+                inpPath = inpPath.substring(1);
+            inpCmd = inpPath.substring(0,1);
+            inpPath = inpPath.substring(1);
+            int p = 0;
+            while (inpPath.length() > p && inpPath.charAt(p) < 'A') {
                 p++;
             }
+            inpCmd += inpPath.substring(0,p);
+            inpPath = inpPath.substring(p);
+            convertOneCmd();
+            outPath += outCmd;
         }
     }
-    
     void convertOneCmd() {
         Log.w("one line","inp="+ inpCmd);
         cmd = inpCmd.substring(0,1);
 
-        if (cmd.equals("M")) cmd_M();
-        else if (cmd.equals("m")) cmd_m();
-        else if (cmd.equals("L")) cmd_L();
-        else if (cmd.equals("l")) cmd_l();
-        else if (cmd.equals("V")) cmd_V();
-        else if (cmd.equals("H")) cmd_H();
-        else if (cmd.equals("h")) cmd_h();
-        else if (cmd.equals("v")) cmd_v();
-        else if (cmd.equals("A")) cmd_A();
-        else if (cmd.equals("C")) cmd_C();
-        else if (cmd.equals("a")) cmd_a();
-        else if (cmd.equals("c")) cmd_c();
-        else if (cmd.equals("S")) cmd_S();
-        else if (cmd.equals("s")) cmd_s();
-        else if (cmd.equals("Q")) cmd_Q();
-        else if (cmd.equals("q")) cmd_q();
-        else if (cmd.equals("z") || cmd.equals("Z")) {
-            outCmd = cmd;
-            inpCmd = "";
-        }
-        else {
-            String msg = "Invalid CMd " + cmd +" abort";
-            val1 = 0;
-            outCmd += msg + "\n "+outCmd + msg;
-            Log.w("Abort", outCmd + " div " + (val2 / val1));
+        switch (cmd) {
+            case "M":
+                cmd_M();
+                break;
+            case "m":
+                cmd_m();
+                break;
+            case "L":
+                cmd_L();
+                break;
+            case "l":
+                cmd_l();
+                break;
+            case "V":
+                cmd_V();
+                break;
+            case "H":
+                cmd_H();
+                break;
+            case "h":
+                cmd_h();
+                break;
+            case "v":
+                cmd_v();
+                break;
+            case "A":
+                cmd_A();
+                break;
+            case "C":
+                cmd_C();
+                break;
+            case "a":
+                cmd_a();
+                break;
+            case "c":
+                cmd_c();
+                break;
+            case "S":
+                cmd_S();
+                break;
+            case "s":
+                cmd_s();
+                break;
+            case "Q":
+                cmd_Q();
+                break;
+            case "q":
+                cmd_q();
+                break;
+            case "z":
+            case "Z":
+                outCmd = cmd;
+                inpCmd = "";
+                break;
+            default:
+                String msg = "++++ Invalid CMd " + cmd + " abort ******\n";
+                val1 = 0;
+                outCmd += msg + "\n " + outCmd + msg;
+                break;
         }
     }
 
-    @NonNull
     private void cmd_M() {  // Mxbase,ybase
         outCmd= "M";
         inpCmd = inpCmd.substring(1);
@@ -157,25 +197,23 @@ public class MainActivity extends AppCompatActivity {
         outCmd += fmt(baseX)+","+fmt(baseY);
         inpCmd = "";
     }
-    @NonNull
     private void cmd_m() {
         outCmd = "m";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
     }
-    @NonNull
     private void cmd_C() {  // Cx1,y1, x2,y2, xBase, yBase
         outCmd = "c";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
@@ -184,16 +222,15 @@ public class MainActivity extends AppCompatActivity {
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             baseX = val1 * scale; baseY = val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
     }
-    @NonNull
     private void cmd_c() {
         outCmd = "c";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
@@ -202,23 +239,22 @@ public class MainActivity extends AppCompatActivity {
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
     }
-    @NonNull
     private void cmd_S() {  //  x1,y1, xBase, yBase
         outCmd = "s";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             baseX = val1 * scale; baseY = val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
@@ -227,14 +263,14 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_s() {
         outCmd = "s";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
@@ -243,30 +279,29 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_Q() {  //  x1,y1, xBase, yBase
         outCmd = "q";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             baseX = val1 * scale; baseY = val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
     }
-    @NonNull
     private void cmd_q() {
         outCmd = "q";
         inpCmd = inpCmd.substring(1);
-        skipBlank();
+        skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
-            skipBlank();
+            skipWhite();
             if (inpCmd.length() == 0)
                 break;
         }
@@ -277,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
         outCmd = "a";
         inpCmd = inpCmd.substring(1);
         getTwoValues();    // rx, ry
-        outCmd += str1+","+str2;;
+        outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
         getOneValues();
         outCmd += str1; // rotation
         getOneValues();
@@ -292,13 +327,12 @@ public class MainActivity extends AppCompatActivity {
         baseY = val1 * scale;
     }
 
-    @NonNull
     private void cmd_a() {
         outCmd = "a";
         inpCmd = inpCmd.substring(1);
         getTwoValues();    // rx, ry
-        outCmd += str1+","+str2;;
-        skipBlank();
+        outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+        skipWhite();
         getOneValues();
         outCmd += str1; // rotation
         getOneValues();
@@ -313,7 +347,6 @@ public class MainActivity extends AppCompatActivity {
         baseY += val1 * scale;
     }
 
-    @NonNull
     private void cmd_L() {  // Lxbase, ybase
         outCmd = "l";
         inpCmd = inpCmd.substring(1);
@@ -321,10 +354,9 @@ public class MainActivity extends AppCompatActivity {
             getTwoValues();
             outCmd += fmt(val1 * scale - baseX)+","+fmt(val2 * scale - baseY);
             baseX = val1 * scale; baseY = val2 * scale;
-            skipBlank();
+            skipWhite();
         }
     }
-    @NonNull
     private void cmd_l() {
         outCmd = "l";
         inpCmd = inpCmd.substring(1);
@@ -332,11 +364,10 @@ public class MainActivity extends AppCompatActivity {
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
-            skipBlank();
+            skipWhite();
         }
     }
 
-    @NonNull
     private void cmd_V() {  // Vybase
         outCmd = "v";
         inpCmd = inpCmd.substring(1);
@@ -346,7 +377,6 @@ public class MainActivity extends AppCompatActivity {
             baseY = val1 * scale;
         }
     }
-    @NonNull
     private void cmd_v() {
         outCmd = "v";
         inpCmd = inpCmd.substring(1);
@@ -356,7 +386,6 @@ public class MainActivity extends AppCompatActivity {
             baseY += val1 * scale;
         }
     }
-    @NonNull
     private void cmd_H() {  // Hxbase
         outCmd = "h";
         inpCmd = inpCmd.substring(1);
@@ -366,7 +395,6 @@ public class MainActivity extends AppCompatActivity {
             baseX = val1 * scale;
         }
     }
-    @NonNull
     private void cmd_h() {
         outCmd = "h";
         inpCmd = inpCmd.substring(1);
@@ -380,9 +408,8 @@ public class MainActivity extends AppCompatActivity {
     // getXYPos
     // if normal inpCmd will be trunked after xy Position with true
     // if no comma it returns x value only with false
-    @NonNull
     private boolean getTwoValues() {
-        skipBlank();
+        skipWhite();
         String s = inpCmd;
         str1 = getDigitStr(s);
         val1 = Float.parseFloat(str1);
@@ -427,53 +454,63 @@ public class MainActivity extends AppCompatActivity {
         return p;
     }
     // inpCmd shorten to outCmd; multi blank to one blank
-    void skipBlank() {
+    void skipWhite() {
         if (inpCmd.length() == 0)
             return;
-        if (inpCmd.charAt(0) == ' ')
+        if (inpCmd.charAt(0) == ' ' || inpCmd.charAt(0) == '\n' || inpCmd.charAt(0) == '\t')
             outCmd += " ";
-        while (inpCmd.charAt(0) == ' ') {
+        while (inpCmd.charAt(0) <= ' ') {
             inpCmd = inpCmd.substring(1);
             if (inpCmd.length() == 0)
                 return;
-        }
-        if (inpCmd.charAt(0) == '\n') {
-            outCmd += "\n";
-            inpCmd = inpCmd.substring(1);
-            skipBlank();
         }
     }
     void skipComma() {
         if (inpCmd.length() == 0)
             return;
-        skipBlank();
+        skipWhite();
         if (inpCmd.charAt(0) == ',') {
             outCmd += ",";
             inpCmd = inpCmd.substring(1);
             if (inpCmd.length() == 0)
                 return;
         }
-        skipBlank();
+        skipWhite();
         if (inpCmd.length() == 0)
             return;
         if (inpCmd.charAt(0) == '\n') {
             outCmd += "\n";
             inpCmd = inpCmd.substring(1);
-            skipBlank();
+            skipWhite();
         }
     }
 
     boolean isDigit(String chr) {
-        if ("0123456789.-".contains(chr))
-            return true;
-        return false;
+        return "0123456789.-".contains(chr);
     }
 
     String fmt(float d) {
-        if(d == (long) d)
-            return String.format("%d",(long)d);
-        else
-            return String.format("%.2f",d);
+        String s = format("%.3f",d);
+        while (s.charAt(s.length()-1) == '0')
+            s = s.substring(0, s.length()-1);
+        if (s.charAt(s.length()-1) == '.')
+            s = s.substring(0, s.length()-1);
+
+        return s;
+    }
+
+    void writeFile(File targetFolder, String fileName, String outText) {
+        try {
+            File targetFile = new File(targetFolder, fileName);
+            FileWriter fileWriter = new FileWriter(targetFile, false);
+
+            // Always wrap FileWriter in BufferedWriter.
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(outText);
+            bufferedWriter.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     // ↓ ↓ ↓ P E R M I S S I O N    RELATED /////// ↓ ↓ ↓ ↓
