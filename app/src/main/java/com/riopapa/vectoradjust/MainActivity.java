@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
     float baseX = -1, baseY = -1, val1 = -1, val2 = -1;
-    float scale;
+    float scale, xO, yO;
     String xml = "";
 
     @Override
@@ -73,9 +73,10 @@ public class MainActivity extends AppCompatActivity {
             xml = sbuffer.toString();
         }
         tvOup.setText(xml);
-        TextView tvScale = findViewById(R.id.scale);
-//        scale = Float.parseFloat(tvScale.getText().toString()) / 100f;
-        scale = 0.4f;
+
+        scale = 0.7f;
+        xO = -4; yO = -1;
+
         String newXml = xml;
         String PATH_STR = "pathData";
         int p = newXml.indexOf(PATH_STR);
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         outCmd= "M";
         inpCmd = inpCmd.substring(1);
         getTwoValues();
-        baseX = val1 * scale; baseY = val2 * scale;
+        baseX = xO + val1 * scale; baseY = yO + val2 * scale;
         outCmd += fmt(baseX)+","+fmt(baseY);
         inpCmd = "";
     }
@@ -216,12 +217,12 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt(val1 * scale - baseX )+","+fmt((val2 * scale - baseY));
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
-            baseX = val1 * scale; baseY = val2 * scale;
+            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
             if (inpCmd.length() == 0)
                 break;
@@ -253,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
-            baseX = val1 * scale; baseY = val2 * scale;
+            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
             if (inpCmd.length() == 0)
                 break;
@@ -285,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
             getTwoValues();
             outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
-            baseX = val1 * scale; baseY = val2 * scale;
+            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
             if (inpCmd.length() == 0)
                 break;
@@ -321,10 +322,10 @@ public class MainActivity extends AppCompatActivity {
         outCmd += str1; // sweep flag
         getOneValues();
         outCmd += fmt(val1 * scale - baseX);
-        baseX = val1 * scale;
+        baseX = xO + val1 * scale;
         getOneValues();
         outCmd += fmt(val1 * scale - baseY);
-        baseY = val1 * scale;
+        baseY = yO + val1 * scale;
     }
 
     private void cmd_a() {
@@ -353,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
             outCmd += fmt(val1 * scale - baseX)+","+fmt(val2 * scale - baseY);
-            baseX = val1 * scale; baseY = val2 * scale;
+            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
         }
     }
@@ -374,7 +375,7 @@ public class MainActivity extends AppCompatActivity {
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
             outCmd += fmt(val1 * scale - baseY);
-            baseY = val1 * scale;
+            baseY = yO + val1 * scale;
         }
     }
     private void cmd_v() {
@@ -392,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
             outCmd += fmt(val1 * scale - baseX);
-            baseX = val1 * scale;
+            baseX += xO + val1 * scale;
         }
     }
     private void cmd_h() {
