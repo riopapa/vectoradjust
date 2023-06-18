@@ -72,10 +72,11 @@ public class MainActivity extends AppCompatActivity {
             }
             xml = sbuffer.toString();
         }
-        tvOup.setText(xml);
 
-        scale = 0.7f;
-        xO = -4; yO = -1;
+        scale = 0.5f;
+        xO = 10; yO = 10;
+        String params = " scale = " + scale + "\n xOffset = " + xO + "\n yOffset = "+ yO;
+        tvOup.setText(params);
 
         String newXml = xml;
         String PATH_STR = "pathData";
@@ -91,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
             p = p1 + 2;
             p = newXml.indexOf(PATH_STR, p);
         }
-        tvOup.setText(newXml);
         try {
             FileOutputStream fileout=openFileOutput("xml.txt", MODE_PRIVATE);
             OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
