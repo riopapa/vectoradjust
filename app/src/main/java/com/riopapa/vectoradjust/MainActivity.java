@@ -12,6 +12,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,8 +36,9 @@ public class MainActivity extends AppCompatActivity {
 
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
-    float baseX = -1, baseY = -1, val1 = -1, val2 = -1;
-    float scale, xO, yO;
+    float baseX = 0, baseY = 0, val1 = -1, val2 = -1;
+    float scale= .12f, xO = 15f, yO = 15f;
+
     String xml = "";
 
     @Override
@@ -73,11 +76,6 @@ public class MainActivity extends AppCompatActivity {
             xml = sbuffer.toString();
         }
 
-        scale = 0.5f;
-        xO = 10; yO = 10;
-        String params = " scale = " + scale + "\n xOffset = " + xO + "\n yOffset = "+ yO;
-        tvOup.setText(params);
-
         String newXml = xml;
         String PATH_STR = "pathData";
         int p = newXml.indexOf(PATH_STR);
@@ -102,7 +100,39 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         writeFile(new File(Environment.getExternalStorageDirectory(), "download"),"drawable_xml.txt", newXml);
+
+
+        tvOup.setText(newXml);
+
+
     }
+    public String convertDrawableXmlToString(int drawableXmlResId) {
+
+// Create a new InputStream object for the drawable resource.
+        InputStream inputStream = getResources().openRawResource(drawableXmlResId);
+
+// Create a new BufferedReader object for the InputStream object.
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+// Read the contents of the drawable file into a string.
+        String drawableContents = "";
+        String line;
+        while (true) {
+            try {
+                if (!((line = bufferedReader.readLine()) != null)) break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            drawableContents += line;
+        }
+
+        return drawableContents;
+// Close the BufferedReader object and the InputStream object.
+//        bufferedReader.close();
+//        inputStream.close();
+
+    }
+
 
     void pathData() {
 
@@ -121,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             inpCmd += inpPath.substring(0,p);
             inpPath = inpPath.substring(p);
             convertOneCmd();
-            outPath += outCmd;
+            outPath += outCmd + "\n\t\t";
         }
     }
     void convertOneCmd() {
@@ -195,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         getTwoValues();
         baseX = xO + val1 * scale; baseY = yO + val2 * scale;
-        outCmd += fmt(baseX)+","+fmt(baseY);
+        outCmd += fmt(baseX)+","+fmt(baseY)+"\n\t\t";
         inpCmd = "";
     }
     private void cmd_m() {
@@ -210,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
             if (inpCmd.length() == 0)
                 break;
         }
+        outCmd += "\n\t\t";
     }
     private void cmd_C() {  // Cx1,y1, x2,y2, xBase, yBase
         outCmd = "c";
@@ -217,11 +248,11 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt(val1 * scale - baseX )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
             if (inpCmd.length() == 0)
@@ -251,9 +282,9 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt((xO + val1 * scale - baseX) )+","+fmt((yO + val2 * scale - baseY));
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt((xO + val1 * scale - baseX) )+","+fmt((yO + val2 * scale - baseY));
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
             if (inpCmd.length() == 0)
@@ -283,9 +314,9 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt(xO + val1 * scale - baseX) +","+fmt(yO + val2 * scale - baseY);
             getTwoValues();
-            outCmd += fmt((val1 * scale - baseX) )+","+fmt((val2 * scale - baseY));
+            outCmd += fmt(xO + val1 * scale - baseX) +","+fmt((yO + val2 * scale - baseY));
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
             if (inpCmd.length() == 0)
@@ -309,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private void cmd_A() {
+    private void cmd_A() {  // rx, ry, xRotation, flag1, flag2, xBase, yBase
         outCmd = "a";
         inpCmd = inpCmd.substring(1);
         getTwoValues();    // rx, ry
@@ -321,10 +352,10 @@ public class MainActivity extends AppCompatActivity {
         getOneValues();
         outCmd += str1; // sweep flag
         getOneValues();
-        outCmd += fmt(val1 * scale - baseX);
+        outCmd += fmt(xO + val1 * scale - baseX);
         baseX = xO + val1 * scale;
         getOneValues();
-        outCmd += fmt(val1 * scale - baseY);
+        outCmd += fmt(yO + val1 * scale - baseY);
         baseY = yO + val1 * scale;
     }
 
@@ -353,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
-            outCmd += fmt(val1 * scale - baseX)+","+fmt(val2 * scale - baseY);
+            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
         }
@@ -374,7 +405,7 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
-            outCmd += fmt(val1 * scale - baseY);
+            outCmd += fmt(yO + val1 * scale - baseY);
             baseY = yO + val1 * scale;
         }
     }
@@ -392,8 +423,8 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
-            outCmd += fmt(val1 * scale - baseX);
-            baseX += xO + val1 * scale;
+            outCmd += fmt(xO + val1 * scale - baseX);
+            baseX = xO + val1 * scale;
         }
     }
     private void cmd_h() {
