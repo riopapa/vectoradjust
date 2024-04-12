@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,11 +16,13 @@ import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
     float baseX = 0, baseY = 0, val1 = -1, val2 = -1;
-    float scale= .12f, xO = 15f, yO = 15f;
+    float scale= 0.18f, xO = 1f, yO = 4f;
 
     String xml = "";
 
@@ -46,14 +49,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()){
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                Uri uri = Uri.fromParts("package", this.getPackageName(), null);
-                intent.setData(uri);
-                startActivity(intent);
-            }
+        if (!Environment.isExternalStorageManager()){
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            Uri uri = Uri.fromParts("package", this.getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
         }
 
 
@@ -104,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
 
         tvOup.setText(newXml);
 
+//        ImageView iv = findViewById(R.id.drawables);
+//        Drawable drawable = getDrawable(R.drawable.annotate_on);
+//        DrawableCompat.setTint(drawable, 0xFF33ccFF);
+//        iv.setImageDrawable(drawable);
 
     }
     public String convertDrawableXmlToString(int drawableXmlResId) {
@@ -221,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cmd_M() {  // Mxbase,ybase
-        outCmd= "M";
+        outCmd= "\n\t\tM";
         inpCmd = inpCmd.substring(1);
         getTwoValues();
         baseX = xO + val1 * scale; baseY = yO + val2 * scale;
@@ -229,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = "";
     }
     private void cmd_m() {
-        outCmd = "m";
+        outCmd = "\n\t\tm";
         inpCmd = inpCmd.substring(1);
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
@@ -343,46 +348,53 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_A() {  // rx, ry, xRotation, flag1, flag2, xBase, yBase
         outCmd = "a";
         inpCmd = inpCmd.substring(1);
-        getTwoValues();    // rx, ry
-        outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
-        getOneValues();
-        outCmd += str1; // rotation
-        getOneValues();
-        outCmd += str1; // large_arc flag
-        getOneValues();
-        outCmd += str1; // sweep flag
-        getOneValues();
-        outCmd += fmt(xO + val1 * scale - baseX);
-        baseX = xO + val1 * scale;
-        getOneValues();
-        outCmd += fmt(yO + val1 * scale - baseY);
-        baseY = yO + val1 * scale;
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();    // rx, ry
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            getOneValues();
+            outCmd += str1; // rotation
+            getOneValues();
+            outCmd += str1; // large_arc flag
+            getOneValues();
+            outCmd += str1; // sweep flag
+            getOneValues();
+            outCmd += fmt(xO + val1 * scale - baseX);
+            baseX = xO + val1 * scale;
+            getOneValues();
+            outCmd += fmt(yO + val1 * scale - baseY);
+            baseY = yO + val1 * scale;
+            skipWhite();
+        }
     }
-
+//        a35,35 0,1 1,70 0,35 35,0 0,1 24.75,59.75
     private void cmd_a() {
         outCmd = "a";
         inpCmd = inpCmd.substring(1);
-        getTwoValues();    // rx, ry
-        outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
-        skipWhite();
-        getOneValues();
-        outCmd += str1; // rotation
-        getOneValues();
-        outCmd += str1; // large_arc flag
-        getOneValues();
-        outCmd += str1; // sweep flag
-        getOneValues();
-        outCmd += fmt(val1 * scale);
-        baseX += val1 * scale;
-        getOneValues();
-        outCmd += fmt(val1 * scale);
-        baseY += val1 * scale;
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
+            getTwoValues();    // rx, ry
+            outCmd += fmt(val1 * scale) + "," + fmt(val2 * scale);
+//            skipWhite();
+            getOneValues();
+            outCmd += str1; // rotation
+            getOneValues();
+            outCmd += str1; // large_arc flag
+            getOneValues();
+            outCmd += str1; // sweep flag
+            getOneValues();
+            outCmd += fmt(val1 * scale);
+            baseX += val1 * scale;
+            getOneValues();
+            outCmd += fmt(val1 * scale);
+            baseY += val1 * scale;
+            skipWhite();
+        }
+
     }
 
     private void cmd_L() {  // Lxbase, ybase
         outCmd = "l";
         inpCmd = inpCmd.substring(1);
-        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
             outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
@@ -392,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_l() {
         outCmd = "l";
         inpCmd = inpCmd.substring(1);
-        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
@@ -403,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_V() {  // Vybase
         outCmd = "v";
         inpCmd = inpCmd.substring(1);
-        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
             outCmd += fmt(yO + val1 * scale - baseY);
             baseY = yO + val1 * scale;
@@ -412,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_v() {
         outCmd = "v";
         inpCmd = inpCmd.substring(1);
-        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
             outCmd += fmt(val1 * scale);
             baseY += val1 * scale;
@@ -421,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_H() {  // Hxbase
         outCmd = "h";
         inpCmd = inpCmd.substring(1);
-        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
             outCmd += fmt(xO + val1 * scale - baseX);
             baseX = xO + val1 * scale;
@@ -430,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
     private void cmd_h() {
         outCmd = "h";
         inpCmd = inpCmd.substring(1);
-        while (inpCmd.length()>0 && isDigit(inpCmd.substring(0,1))) {
+        while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
             outCmd += fmt(val1 * scale);
             baseX += val1 * scale;
@@ -440,30 +452,21 @@ public class MainActivity extends AppCompatActivity {
     // getXYPos
     // if normal inpCmd will be trunked after xy Position with true
     // if no comma it returns x value only with false
-    private boolean getTwoValues() {
+    private void getTwoValues() {
         skipWhite();
         String s = inpCmd;
         str1 = getDigitStr(s);
         val1 = Float.parseFloat(str1);
         s = s.substring(str1.length());
-        if (s.length() == 0) {  // only single digits
+        if (s.isEmpty()) {  // only single digits
             inpCmd = "";
-            return false;
+            return;
         }
-        while (s.charAt(0) == ' ')
+        while (s.charAt(0) == ' ' || s.charAt(0) == ',')
             s = s.substring(1);
-        if (s.charAt(0) == ',') { // y value comming
-            s = s.substring(1);
-            while (s.charAt(0) == ' ')
-                s = s.substring(1);
-            str2 = getDigitStr(s);
-            val2 = Float.parseFloat(str2);
-            inpCmd = s.substring(str2.length());
-            return true;
-        } else {
-            inpCmd = s;
-        }
-        return false;
+        str2 = getDigitStr(s);
+        val2 = Float.parseFloat(str2);
+        inpCmd = s.substring(str2.length());
     }
 
     private void getOneValues() {
@@ -487,13 +490,16 @@ public class MainActivity extends AppCompatActivity {
     }
     // inpCmd shorten to outCmd; multi blank to one blank
     void skipWhite() {
-        if (inpCmd.length() == 0)
+        if (inpCmd.isEmpty())
             return;
-        if (inpCmd.charAt(0) == ' ' || inpCmd.charAt(0) == '\n' || inpCmd.charAt(0) == '\t')
+        if (inpCmd.charAt(0) == ' ' || inpCmd.charAt(0) == '\n'
+                || inpCmd.charAt(0) == ',' || inpCmd.charAt(0) == '\t') {
             outCmd += " ";
+            inpCmd = inpCmd.substring(1);
+        }
         while (inpCmd.charAt(0) <= ' ') {
             inpCmd = inpCmd.substring(1);
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 return;
         }
     }

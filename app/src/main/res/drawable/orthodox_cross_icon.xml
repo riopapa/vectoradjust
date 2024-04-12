@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:alpha="0.5" android:height="600dp" android:viewportHeight="600" android:viewportWidth="450" android:width="450dp">
+      
+    <path android:strokeColor="#FFCC0000"
+        android:strokeWidth="3"
+        android:pathData="
+        M190,35
+        a35,35 0,1 1,70 0,35 35,0 0,1 24.75,59.75
+        A35.43,35.43 0,0 1,260 105
+        v85h85
+        a35,35 0,1 1,70 0,35 35,0 1,1 0,70 35,35 0,1 1,-70 0
+        H260V495
+
+        a35,35 0,1 1,0 70,35 35,0 1,1 -70,0 35,35 0,1 1,0 -70
+
+        V260H105
+        a35,35 0,0 1,-59.75 24.75
+        A35.43,35.43 0,0 1,35 260
+        a35,35 0,1 1,0 -70,35 35,0 0,1 59.75,-24.75
+        A35.43,35.43 0,0 1,105 190h85
+        V105
+        a35,35 0,0 1,-24.75 -59.75
+        A35.43,35.43 0,0 1,190 35
+        "/>
+
+</vector>
