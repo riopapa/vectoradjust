@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
     float baseX = 0, baseY = 0, val1 = -1, val2 = -1;
-    float scale= 0.18f, xO = 1f, yO = 4f;
+    float scale= 0.14f, xO = 4f, yO = 4f;
 
     String xml = "";
 
