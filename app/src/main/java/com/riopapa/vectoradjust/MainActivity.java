@@ -40,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
     float baseX = 0, baseY = 0, val1 = -1, val2 = -1;
-    float scale= 0.14f, xO = 4f, yO = 4f;
+    float scale= .8f, xO = 5f, yO = 12f;
+    String digits = "%.1f";
 
     String xml = "";
 
@@ -56,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
             intent.setData(uri);
             startActivity(intent);
         }
-
 
         tvGo = findViewById(R.id.go);
         tvOup = findViewById(R.id.txt_dst);
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         String line;
         while (true) {
             try {
-                if (!((line = bufferedReader.readLine()) != null)) break;
+                if ((line = bufferedReader.readLine()) == null) break;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         getTwoValues();
         baseX = xO + val1 * scale; baseY = yO + val2 * scale;
-        outCmd += fmt(baseX)+","+fmt(baseY)+"\n\t\t";
+        outCmd += fmt(baseX)+","+fmt(baseY);
         inpCmd = "";
     }
     private void cmd_m() {
@@ -242,10 +242,9 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
-        outCmd += "\n\t\t";
     }
     private void cmd_C() {  // Cx1,y1, x2,y2, xBase, yBase
         outCmd = "c";
@@ -260,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
     }
@@ -277,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
     }
@@ -292,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt((xO + val1 * scale - baseX) )+","+fmt((yO + val2 * scale - baseY));
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
     }
@@ -308,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
     }
@@ -324,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt(xO + val1 * scale - baseX) +","+fmt((yO + val2 * scale - baseY));
             baseX = xO + val1 * scale; baseY = yO + val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
     }
@@ -339,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
             outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
             baseX += val1 * scale; baseY += val2 * scale;
             skipWhite();
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 break;
         }
     }
@@ -497,24 +496,24 @@ public class MainActivity extends AppCompatActivity {
             outCmd += " ";
             inpCmd = inpCmd.substring(1);
         }
-        while (inpCmd.charAt(0) <= ' ') {
+        while (!inpCmd.isEmpty() && inpCmd.charAt(0) <= ' ') {
             inpCmd = inpCmd.substring(1);
             if (inpCmd.isEmpty())
                 return;
         }
     }
     void skipComma() {
-        if (inpCmd.length() == 0)
+        if (inpCmd.isEmpty())
             return;
         skipWhite();
         if (inpCmd.charAt(0) == ',') {
             outCmd += ",";
             inpCmd = inpCmd.substring(1);
-            if (inpCmd.length() == 0)
+            if (inpCmd.isEmpty())
                 return;
         }
         skipWhite();
-        if (inpCmd.length() == 0)
+        if (inpCmd.isEmpty())
             return;
         if (inpCmd.charAt(0) == '\n') {
             outCmd += "\n";
@@ -528,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     String fmt(float d) {
-        String s = format("%.3f",d);
+        String s = format(digits,d);
         while (s.charAt(s.length()-1) == '0')
             s = s.substring(0, s.length()-1);
         if (s.charAt(s.length()-1) == '.')
