@@ -7,22 +7,16 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
-    float baseX = 0, baseY = 0, val1 = -1, val2 = -1;
-    float scale= .2f, xO = 45f, yO = 25f;
+    float baseX = 9, baseY = 0, val1 = -1, val2 = -1;
+    float scale= 1.2f, xShift = -2f, yShift = -2f;
     String digits = "%.1f";
 
     String xml = "";
@@ -229,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         outCmd= "\n\t\tM";
         inpCmd = inpCmd.substring(1);
         getTwoValues();
-        baseX = xO + val1 * scale; baseY = yO + val2 * scale;
+        baseX = xShift + val1 * scale; baseY = yShift + val2 * scale;
         outCmd += fmt(baseX)+","+fmt(baseY);
         inpCmd = "";
     }
@@ -252,12 +246,12 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
+            outCmd += fmt(xShift + val1 * scale - baseX)+","+fmt(yShift + val2 * scale - baseY);
             getTwoValues();
-            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
+            outCmd += fmt(xShift + val1 * scale - baseX)+","+fmt(yShift + val2 * scale - baseY);
             getTwoValues();
-            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
-            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
+            outCmd += fmt(xShift + val1 * scale - baseX)+","+fmt(yShift + val2 * scale - baseY);
+            baseX = xShift + val1 * scale; baseY = yShift + val2 * scale;
             skipWhite();
             if (inpCmd.isEmpty())
                 break;
@@ -286,10 +280,10 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt((xO + val1 * scale - baseX) )+","+fmt((yO + val2 * scale - baseY));
+            outCmd += fmt((xShift + val1 * scale - baseX) )+","+fmt((yShift + val2 * scale - baseY));
             getTwoValues();
-            outCmd += fmt((xO + val1 * scale - baseX) )+","+fmt((yO + val2 * scale - baseY));
-            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
+            outCmd += fmt((xShift + val1 * scale - baseX) )+","+fmt((yShift + val2 * scale - baseY));
+            baseX = xShift + val1 * scale; baseY = yShift + val2 * scale;
             skipWhite();
             if (inpCmd.isEmpty())
                 break;
@@ -318,10 +312,10 @@ public class MainActivity extends AppCompatActivity {
         skipWhite();
         while (isDigit(inpCmd.substring(0,1))) {   // continue to s
             getTwoValues();
-            outCmd += fmt(xO + val1 * scale - baseX) +","+fmt(yO + val2 * scale - baseY);
+            outCmd += fmt(xShift + val1 * scale - baseX) +","+fmt(yShift + val2 * scale - baseY);
             getTwoValues();
-            outCmd += fmt(xO + val1 * scale - baseX) +","+fmt((yO + val2 * scale - baseY));
-            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
+            outCmd += fmt(xShift + val1 * scale - baseX) +","+fmt((yShift + val2 * scale - baseY));
+            baseX = xShift + val1 * scale; baseY = yShift + val2 * scale;
             skipWhite();
             if (inpCmd.isEmpty())
                 break;
@@ -357,11 +351,11 @@ public class MainActivity extends AppCompatActivity {
             getOneValues();
             outCmd += str1; // sweep flag
             getOneValues();
-            outCmd += fmt(xO + val1 * scale - baseX);
-            baseX = xO + val1 * scale;
+            outCmd += fmt(xShift + val1 * scale - baseX);
+            baseX = xShift + val1 * scale;
             getOneValues();
-            outCmd += fmt(yO + val1 * scale - baseY);
-            baseY = yO + val1 * scale;
+            outCmd += fmt(yShift + val1 * scale - baseY);
+            baseY = yShift + val1 * scale;
             skipWhite();
         }
     }
@@ -395,8 +389,8 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getTwoValues();
-            outCmd += fmt(xO + val1 * scale - baseX)+","+fmt(yO + val2 * scale - baseY);
-            baseX = xO + val1 * scale; baseY = yO + val2 * scale;
+            outCmd += fmt(xShift + val1 * scale - baseX)+","+fmt(yShift + val2 * scale - baseY);
+            baseX = xShift + val1 * scale; baseY = yShift + val2 * scale;
             skipWhite();
         }
     }
@@ -416,8 +410,8 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
-            outCmd += fmt(yO + val1 * scale - baseY);
-            baseY = yO + val1 * scale;
+            outCmd += fmt(yShift + val1 * scale - baseY);
+            baseY = yShift + val1 * scale;
         }
     }
     private void cmd_v() {
@@ -434,8 +428,8 @@ public class MainActivity extends AppCompatActivity {
         inpCmd = inpCmd.substring(1);
         while (!inpCmd.isEmpty() && isDigit(inpCmd.substring(0,1))) {
             getOneValues();
-            outCmd += fmt(xO + val1 * scale - baseX);
-            baseX = xO + val1 * scale;
+            outCmd += fmt(xShift + val1 * scale - baseX);
+            baseX = xShift + val1 * scale;
         }
     }
     private void cmd_h() {

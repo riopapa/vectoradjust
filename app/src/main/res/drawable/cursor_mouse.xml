@@ -13,12 +13,22 @@
         android:pathData="
         M20,6l-18,-4l4,18h12l2,-2v-12z"/>
     <path
-        android:strokeColor="#F44"
+        android:strokeColor="#F00"
         android:strokeWidth=".8"
         android:strokeLineJoin="round"
         android:strokeLineCap="round"
         android:pathData="
         M20,6l-18,-4l4,18h12l2,-2v-12z"/>
+    <path
+        android:strokeColor="#0F0"
+        android:strokeWidth=".8"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:pathData="
+        M20,6.0l-8.5,-1.9
+        M20,6v6
+        M4.25,12l1.7,8h6
+       "/>
     <path
         android:strokeColor="#FFF"
         android:strokeWidth="1.5"
