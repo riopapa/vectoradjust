@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
     float baseX = 9, baseY = 0, val1 = -1, val2 = -1;
-    float scale= .9f, xShift = 12f, yShift = 12f;
+    float scale= 1.2f, xShift = -19f, yShift = -18f;
     String digits = "%.1f";
 
     String xml = "";
@@ -206,6 +206,12 @@ public class MainActivity extends AppCompatActivity {
             case "q":
                 cmd_q();
                 break;
+            case "T":
+                cmd_T();
+                break;
+            case "t":
+                cmd_t();
+                break;
             case "z":
             case "Z":
                 outCmd = cmd;
@@ -336,6 +342,35 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    @NonNull
+    private void cmd_T() {  // (xPrev, yPrev) x1,y1
+        outCmd = "t";
+        inpCmd = inpCmd.substring(1);
+        skipWhite();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt(xShift + val1 * scale - baseX) +","+fmt(yShift + val2 * scale - baseY);
+            baseX = xShift + val1 * scale; baseY = yShift + val2 * scale;
+            skipWhite();
+            if (inpCmd.isEmpty())
+                break;
+        }
+    }
+    private void cmd_t() {
+        outCmd = "t";
+        inpCmd = inpCmd.substring(1);
+        skipWhite();
+        while (isDigit(inpCmd.substring(0,1))) {   // continue to s
+            getTwoValues();
+            outCmd += fmt(val1 * scale)+","+fmt(val2 * scale);
+            baseX += val1 * scale; baseY += val2 * scale;
+            skipWhite();
+            if (inpCmd.isEmpty())
+                break;
+        }
+    }
+
 
     @NonNull
     private void cmd_A() {  // rx, ry, xRotation, flag1, flag2, xBase, yBase
