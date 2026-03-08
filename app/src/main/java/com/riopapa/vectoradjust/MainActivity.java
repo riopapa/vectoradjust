@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tvGo, tvOup;
     String str1, str2, cmd, inpCmd, outCmd, inpPath, outPath;
     float baseX = 9, baseY = 0, val1 = -1, val2 = -1;
-    float scale= 1.2f, xShift = -19f, yShift = -18f;
+    float scale= 1f, xShift =0f, yShift = 0f;
     String digits = "%.1f";
 
     String xml = "";
